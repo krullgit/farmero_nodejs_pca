@@ -97,7 +97,7 @@ def find_PCAKmeans(imagepath1, imagepath2):
     
     print ('\ncomputing k means')
     
-    components = 3
+    components = 10
     least_index, change_map = clustering(FVS, components, new_size)
     
     change_map[change_map == least_index] = 255

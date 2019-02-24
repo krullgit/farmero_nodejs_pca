@@ -1,16 +1,17 @@
+#!/home/matthes/anaconda2/envs python
+
 import cv2
 import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from collections import Counter
 from scipy.misc import imread, imresize, imsave
-from skimage import io
 
 def find_vector_set(diff_image, new_size):
    
     i = 0
     j = 0
-    vector_set = np.zeros((((new_size[0] * new_size[1]) / 5).astype(np.int), 5))
+    vector_set = np.zeros(((new_size[0] * new_size[1]) / 25, 25))
     while i < vector_set.shape[0]:
         while j < new_size[0]:
             k = 0
@@ -22,6 +23,7 @@ def find_vector_set(diff_image, new_size):
             j = j + 5
         i = i + 1
         
+    print '\nvector_set shape', vector_set.shape
             
     mean_vec   = np.mean(vector_set, axis = 0)    
     vector_set = vector_set - mean_vec
@@ -45,6 +47,7 @@ def find_FVS(EVS, diff_image, mean_vec, new):
         
     FVS = np.dot(feature_vector_set, EVS)
     FVS = FVS - mean_vec
+    print "\nfeature vector space size", FVS.shape
     return FVS
 
 def clustering(FVS, components, new):
@@ -55,19 +58,17 @@ def clustering(FVS, components, new):
     count  = Counter(output)
 
     least_index = min(count, key = count.get)            
-    change_map  = np.reshape(output.astype(np.int),((new[0] - 4).astype(np.int), (new[1] - 4).astype(np.int)))
+    change_map  = np.reshape(output,(new[0] - 4, new[1] - 4))
     
     return least_index, change_map
 
    
 def find_PCAKmeans(imagepath1, imagepath2):
     
+    print 'Operating'
     
-    image1_pre = io.imread(imagepath1, as_gray=True)
-    image2_pre = io.imread(imagepath2, as_gray=True)
-    
-    image1 = image1_pre[:, :]
-    image2 = image2_pre[:, :]
+    image1 = imread(imagepath1)
+    image2 = imread(imagepath2)
     
     new_size = np.asarray(image1.shape) / 5 * 5
     image1 = imresize(image1, (new_size)).astype(np.int16)
@@ -75,6 +76,7 @@ def find_PCAKmeans(imagepath1, imagepath2):
     
     diff_image = abs(image1 - image2)   
     imsave('diff.jpg', diff_image)
+    print '\nBoth images resized to ',new_size
         
     vector_set, mean_vec = find_vector_set(diff_image, new_size)
     
@@ -84,8 +86,9 @@ def find_PCAKmeans(imagepath1, imagepath2):
         
     FVS     = find_FVS(EVS, diff_image, mean_vec, new_size)
     
+    print '\ncomputing k means'
     
-    components = 3
+    components = 6
     least_index, change_map = clustering(FVS, components, new_size)
     
     change_map[change_map == least_index] = 255
@@ -98,13 +101,14 @@ def find_PCAKmeans(imagepath1, imagepath2):
                              (0,1,1,1,0),
                              (0,0,1,0,0)), dtype=np.uint8)
     cleanChangeMap = cv2.erode(change_map,kernel)
-    imsave("changemap.jpg", change_map)
-    imsave("cleanchangemap.jpg", cleanChangeMap)
+    imsave("data/changemap.jpg", change_map)
+    imsave("data/cleanchangemap.jpg", cleanChangeMap)
 
     
 if __name__ == "__main__":
-    #a = 'Andasol_09051987.jpg'
-    #b = 'Andasol_09122013.jpg'
-    a = 'testdata/f1.jpg'
-    b = 'testdata/f2.jpg'
+    print('test')
+    a = 'data/nvdiDay1.jpg'
+    b = 'data/nvdiDay2.jpg'
     find_PCAKmeans(a,b)    
+    print("finished PCA")
+    

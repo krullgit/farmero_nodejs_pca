@@ -1,3 +1,8 @@
+
+
+######################### PCA ################################
+
+
 import cv2
 import numpy as np
 from sklearn.cluster import KMeans
@@ -10,7 +15,7 @@ def find_vector_set(diff_image, new_size):
    
     i = 0
     j = 0
-    vector_set = np.zeros((((new_size[0] * new_size[1]) / 5).astype(np.int), 5))
+    vector_set = np.zeros((((new_size[0] * new_size[1]) / 25).astype(np.int), 25))
     while i < vector_set.shape[0]:
         while j < new_size[0]:
             k = 0
@@ -100,11 +105,17 @@ def find_PCAKmeans(imagepath1, imagepath2):
     cleanChangeMap = cv2.erode(change_map,kernel)
     imsave("changemap.jpg", change_map)
     imsave("cleanchangemap.jpg", cleanChangeMap)
+    print('cleanchangemap.jpg')
 
     
 if __name__ == "__main__":
-    #a = 'Andasol_09051987.jpg'
-    #b = 'Andasol_09122013.jpg'
+
+    ##### WORKS #####
+    #a = 'testdata/field1.jpg'
+    #b = 'testdata/field2.jpg'
+
+    ##### DOESNT WORK #####
     a = 'testdata/f1.jpg'
     b = 'testdata/f2.jpg'
+
     find_PCAKmeans(a,b)    
