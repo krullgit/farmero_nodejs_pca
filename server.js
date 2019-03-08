@@ -25,7 +25,7 @@ app.get('/', function(req, res) {
 
     const spawn1 = require('child_process').spawn;
     //const ls1 = spawn1('/home/matthes/anaconda2/envs/googleapi/bin/python', ['test.py', '[[13.272943496704102, 52.26377127581493],[13.275260925292969, 52.25586469803543],[13.288092613220215, 52.2596999583217],[13.292684555053711, 52.26650278898101],[13.296761512756348,52.27017956020817],[13.296289443969727,52.27123001026625],[13.288435935974121,52.26933918223966],[13.28174114227295,52.26834121271067],[13.272943496704102,52.26377127581493]]', 'arg2']);
-    const ls1 = spawn1('/home/matthes/anaconda2/envs/googleapi/bin/python', ['test.py', coord, 'arg2']);
+    const ls1 = spawn1('/home/matthes/anaconda2/envs/farmero_python3/bin/python', ['test.py', coord, 'arg2']);
     
     var back = ''
 
@@ -39,7 +39,7 @@ app.get('/', function(req, res) {
          // START ---- open the NVDI Images, process the PCA on it and save it to a file called "changemap.jpg" ---- START
 
         const spawn2 = require('child_process').spawn;
-        const ls2 = spawn2('/home/matthes/anaconda2/bin/python', ['test4.py']);
+        const ls2 = spawn2('/home/matthes/anaconda2/envs/farmero_python2/bin/python', ['test4.py']);
         
         var back = ''
 
@@ -54,7 +54,7 @@ app.get('/', function(req, res) {
 
             const spawn3 = require('child_process').spawn;
             //const ls1 = spawn1('/home/matthes/anaconda2/envs/googleapi/bin/python', ['test.py', '[[13.272943496704102, 52.26377127581493],[13.275260925292969, 52.25586469803543],[13.288092613220215, 52.2596999583217],[13.292684555053711, 52.26650278898101],[13.296761512756348,52.27017956020817],[13.296289443969727,52.27123001026625],[13.288435935974121,52.26933918223966],[13.28174114227295,52.26834121271067],[13.272943496704102,52.26377127581493]]', 'arg2']);
-            const ls3 = spawn3('/home/matthes/anaconda2/envs/googleapi/bin/python', ['test5.py', coord, 'arg2']);
+            const ls3 = spawn3('/home/matthes/anaconda2/envs/farmero_python3/bin/python', ['test5.py', coord, 'arg2']);
             
             var back = ''
 
