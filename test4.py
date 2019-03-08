@@ -68,19 +68,31 @@ def find_PCAKmeans(imagepath1, imagepath2):
     print 'Operating'
     
     image1 = imread(imagepath1)
+    print(image1.shape[1])
+    print(image1.shape[0])
     image2 = imread(imagepath2)
+    print(image2.shape[1])
+    print(image2.shape[0])
     
     new_size = np.asarray(image1.shape) / 5 * 5
-    image1 = imresize(image1, (new_size)).astype(np.int16)
-    image2 = imresize(image2, (new_size)).astype(np.int16)
+    print('\new size ', np.asarray(image1.shape))
+    print('\new size ', np.asarray(image1.shape) / 5)
+    print('\new size ', np.asarray(image1.shape) / 5 * 5)
+    # We dont need to resize the image
+    #image1 = imresize(image1, (new_size)).astype(np.int16)
+    #image2 = imresize(image2, (new_size)).astype(np.int16)
+    image1 = image1.astype(np.int16)
+    image2 = image2.astype(np.int16)
     
-    diff_image = abs(image1 - image2)   
-    imsave('diff.jpg', diff_image)
-    print '\nBoth images resized to ',new_size
+    diff_image = abs(image2 - image1)   
+    imsave('data/diff.jpg', diff_image)
+    shape = diff_image.shape[0]
+
+    print '\nBoth images resized to ',diff_image.shape[0]
         
     vector_set, mean_vec = find_vector_set(diff_image, new_size)
     
-    pca     = PCA()
+    pca = PCA()
     pca.fit(vector_set)
     EVS = pca.components_
         
@@ -88,7 +100,7 @@ def find_PCAKmeans(imagepath1, imagepath2):
     
     print '\ncomputing k means'
     
-    components = 6
+    components = 4
     least_index, change_map = clustering(FVS, components, new_size)
     
     change_map[change_map == least_index] = 255

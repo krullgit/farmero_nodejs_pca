@@ -33,27 +33,13 @@ def clipTIF(tifNVDI, clippedTifNVDI, coord):
     with rasterio.open(clippedTifNVDI, "w", **out_meta) as dest:
         dest.write(out_image)
 
-def safeTIF(tif, clippedTif):
-
-    with rasterio.open(tif) as src:
-        out_image = src
-        out_meta = src.meta
-
-    out_meta.update({"driver": "GTiff",
-                    "height": out_image.shape[1],
-                    "width": out_image.shape[2]})
-
-    with rasterio.open(clippedTif, "w", **out_meta) as dest:
-        dest.write(out_image)
-
-
 # FUNC 
 
 def polygonToZIPfromEE(polygon, dayStart, dayEnd, band):
     collection = (ee.ImageCollection('COPERNICUS/S2')
         .filterDate(dayStart, dayEnd)
         .filterBounds(polygon)
-        .filterMetadata('CLOUDY_PIXEL_PERCENTAGE', 'less_than', 30)
+        .filterMetadata('CLOUDY_PIXEL_PERCENTAGE', 'less_than', 100)
         .map(maskS2clouds))
 
     if(band == 'NVDI'):
@@ -189,16 +175,22 @@ def writeToFile(zipRGBDay2, zipRGBDay2FileName):
 ee.Initialize()
 
 # PARAM
+
 # This is when running without the nodejs server
+
+
+coordString = "[[12.941725850371768,51.57971352400993],[12.942047715453555,51.57588640768779],[12.940846085814883,51.571032040481654],[12.943442464141299,51.57112539858611],[12.944708466796328,51.570671943139885],[12.948763966826846,51.57088533450155],[12.949965596465518,51.57121875649885],[12.951789498595645,51.570325180040776],[12.954450249938418,51.57021848317042],[12.954471707610537,51.571432145293755],[12.946274876861025,51.580113552408065],[12.941725850371768,51.57971352400993]]"
+#coordString = "[[14.566519260406494, 51.16942143993214],[14.571776390075684, 51.16933398636553],[14.57181930541992, 51.170383418219465],[14.57480192184448, 51.17024887700865],[14.57510232925415,51.17326923268294],[14.572194814682007,51.17347775773388],[14.571744203567503,51.17388135192782],[14.571443796157837,51.17345085132869],[14.568450450897215,51.17406296816258],[14.567999839782715,51.17329613919413],[14.56661581993103,51.17307416000739],[14.566519260406494,51.16942143993214]]"
 #coordString = "[[13.272943496704102, 52.26377127581493],[13.275260925292969, 52.25586469803543],[13.288092613220215, 52.2596999583217],[13.292684555053711, 52.26650278898101],[13.296761512756348,52.27017956020817],[13.296289443969727,52.27123001026625],[13.288435935974121,52.26933918223966],[13.28174114227295,52.26834121271067],[13.272943496704102,52.26377127581493]]"
-#coord = json.loads(coordString) 
+#coord = json.loads(coordString)
 # In this case the nodejs server provides the coordinates in an argument
 coord = json.loads(sys.argv[1])
 polygon = ee.Geometry.Polygon([coord])
-dayStartDay1 = '2018-07-03'
-dayEndDay1 = '2018-07-04'
-dayStartDay2 = '2018-07-31'
-dayEndDay2 = '2018-08-01'
+dayStartDay1 = '2018-07-03' # in
+dayEndDay1 = '2018-07-04' # in
+dayStartDay2 = '2018-07-29' # in
+dayEndDay2 = '2018-08-01' # in
+
 zipRGBDay2FileName = 'data/zipRGBDay2FileName.zip' 
 #DO
 zipNVDIDay1 = polygonToZIPfromEE(polygon, dayStartDay1, dayEndDay1, 'NVDI')
@@ -281,121 +273,4 @@ print("finish producing Images")
 
 
 # #print("out2.jpg")
-
-
-########################## PCA ################################
-
-
-# import cv2
-# import numpy as np
-# from sklearn.cluster import KMeans
-# from sklearn.decomposition import PCA
-# from collections import Counter
-# from scipy.misc import imread, imresize, imsave
-# from skimage import io
-
-# def find_vector_set(diff_image, new_size):
-   
-#     i = 0
-#     j = 0
-#     vector_set = np.zeros((((new_size[0] * new_size[1]) / 25).astype(np.int), 25))
-#     while i < vector_set.shape[0]:
-#         while j < new_size[0]:
-#             k = 0
-#             while k < new_size[1]:
-#                 block   = diff_image[j:j+5, k:k+5]
-#                 feature = block.ravel()
-#                 vector_set[i, :] = feature
-#                 k = k + 5
-#             j = j + 5
-#         i = i + 1
-        
-            
-#     mean_vec   = np.mean(vector_set, axis = 0)    
-#     vector_set = vector_set - mean_vec
-    
-#     return vector_set, mean_vec
-    
-  
-# def find_FVS(EVS, diff_image, mean_vec, new):
-    
-#     i = 2 
-#     feature_vector_set = []
-    
-#     while i < new[0] - 2:
-#         j = 2
-#         while j < new[1] - 2:
-#             block = diff_image[i-2:i+3, j-2:j+3]
-#             feature = block.flatten()
-#             feature_vector_set.append(feature)
-#             j = j+1
-#         i = i+1
-        
-#     FVS = np.dot(feature_vector_set, EVS)
-#     FVS = FVS - mean_vec
-#     return FVS
-
-# def clustering(FVS, components, new):
-    
-#     kmeans = KMeans(components, verbose = 0)
-#     kmeans.fit(FVS)
-#     output = kmeans.predict(FVS)
-#     count  = Counter(output)
-
-#     least_index = min(count, key = count.get)            
-#     change_map  = np.reshape(output.astype(np.int),((new[0] - 4).astype(np.int), (new[1] - 4).astype(np.int)))
-    
-#     return least_index, change_map
-
-   
-# def find_PCAKmeans(imagepath1, imagepath2):
-    
-    
-#     image1_pre = io.imread(imagepath1, as_gray=True)
-#     image2_pre = io.imread(imagepath2, as_gray=True)
-    
-#     image1 = image1_pre[:, :]
-#     image2 = image2_pre[:, :]
-    
-#     new_size = np.asarray(image1.shape) / 5 * 5
-#     image1 = imresize(image1, (new_size)).astype(np.int16)
-#     image2 = imresize(image2, (new_size)).astype(np.int16)
-    
-#     diff_image = abs(image1 - image2)   
-#     imsave('diff.jpg', diff_image)
-        
-#     vector_set, mean_vec = find_vector_set(diff_image, new_size)
-    
-#     pca     = PCA()
-#     pca.fit(vector_set)
-#     EVS = pca.components_
-        
-#     FVS     = find_FVS(EVS, diff_image, mean_vec, new_size)
-    
-    
-#     components = 3
-#     least_index, change_map = clustering(FVS, components, new_size)
-    
-#     change_map[change_map == least_index] = 255
-#     change_map[change_map != 255] = 0
-    
-#     change_map = change_map.astype(np.uint8)
-#     kernel     = np.asarray(((0,0,1,0,0),
-#                              (0,1,1,1,0),
-#                              (1,1,1,1,1),
-#                              (0,1,1,1,0),
-#                              (0,0,1,0,0)), dtype=np.uint8)
-#     cleanChangeMap = cv2.erode(change_map,kernel)
-#     imsave("changemap.jpg", change_map)
-#     imsave("cleanchangemap.jpg", cleanChangeMap)
-#     print('cleanchangemap.jpg')
-
-    
-# if __name__ == "__main__":
-#     #a = 'Andasol_09051987.jpg'
-#     #b = 'Andasol_09122013.jpg'
-#     a = 'testdata/f1.jpg'
-#     b = 'testdata/f2.jpg'
-#     find_PCAKmeans(a,b)    
-
 
