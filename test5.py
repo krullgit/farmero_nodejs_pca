@@ -25,7 +25,7 @@ with rasterio.open('data/nvdiDay1.tif') as src:
     out_image, out_transform = rasterio.mask.mask(src, geoms, crop=True)
     out_meta = src.meta
 
-with rasterio.open('data/changemap.jpg') as src:
+with rasterio.open('data/cleanchangemap.jpg') as src:
     rgb = np.float32(src.read())
 
 
