@@ -1,7 +1,7 @@
 # farmero_nodejs_pca
 
 
-## Installation
+## Installation (depreciated) -> use docker_instructions instead
 
 1. go to folder "python envs" and follow instructions in readme
 
