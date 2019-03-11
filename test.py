@@ -12,6 +12,7 @@ from PIL import Image
 import rasterio
 import rasterio.mask
 from osgeo import gdal
+from rasterio import plot
 
 
 ########### FUNCTIONS ############
@@ -33,7 +34,7 @@ def clipTIF(tifNVDI, clippedTifNVDI, coord):
     with rasterio.open(clippedTifNVDI, "w", **out_meta) as dest:
         dest.write(out_image)
 
-# FUNC 
+# FUNC
 
 def polygonToZIPfromEE(polygon, dayStart, dayEnd, band):
     collection = (ee.ImageCollection('COPERNICUS/S2')
@@ -48,14 +49,15 @@ def polygonToZIPfromEE(polygon, dayStart, dayEnd, band):
         image1 = collection.sort('CLOUD_COVER').first();
 
     path = image1.getDownloadUrl({
-        'scale': 10, 
+        'scale': 10,
         'crs': 'EPSG:4326',
         'region': coord
     })
 
     print(path)
 
-    return urlopen(path)
+    #return urlopen(path)
+    return image1
 
 # FUNC
 def extractTIFFromZIP(resp, regex):
@@ -65,7 +67,7 @@ def extractTIFFromZIP(resp, regex):
                 print(contained_file)
                 return my_zip_file.open(contained_file)
             #else:
-            
+
             # with open(("unzipped_and_read_" + contained_file + ".file"), "wb") as output:
             #for line in my_zip_file.open(contained_file).readlines():
                 #print(line)
@@ -114,8 +116,9 @@ def tifToJPG(inPath, outPath):
         '-ot Byte',
         '-of JPEG',
         '-scale'
-    ] 
+    ]
     options_string = " ".join(options_list)
+
     gdal.Translate(outPath,
                 inPath,
             options=options_string)
@@ -129,7 +132,7 @@ def tifToPNG(inPath, outPath):
         '-b 2',
         '-b 1',
         '-scale'
-    ] 
+    ]
     options_string = " ".join(options_list)
     gdal.Translate(outPath,
                 inPath,
@@ -165,7 +168,14 @@ def mergeTwoimages(imageOnePath, imageTwoPath, fieldAndChange):
 def writeToFile(zipRGBDay2, zipRGBDay2FileName):
     with open(zipRGBDay2FileName, 'w') as the_file:
         the_file.write(zipRGBDay2)
-
+        
+# Accepts NDVI image and makes it look better using Rasterio plot
+def colorndvi(imageinpath,imageoutpath):
+    ndvi_img = rasterio.open(imageinpath)
+    x = plot.show(ndvi_img)
+    x.axis('off')
+    fig = x.get_figure()
+    fig.savefig(imageoutpath,transparent = True)
 
 
 
@@ -191,46 +201,78 @@ dayEndDay1 = '2018-07-04' # in
 dayStartDay2 = '2018-07-29' # in
 dayEndDay2 = '2018-08-01' # in
 
-zipRGBDay2FileName = 'data/zipRGBDay2FileName.zip' 
+zipRGBDay2FileName = 'data/zipRGBDay2FileName.zip'
+zipRGBDay1FileName = 'data/zipRGBDay1FileName.zip'
 #DO
 zipNVDIDay1 = polygonToZIPfromEE(polygon, dayStartDay1, dayEndDay1, 'NVDI')
-zipNVDIDay2 = polygonToZIPfromEE(polygon, dayStartDay2, dayEndDay2, 'NVDI') 
+zipNVDIDay2 = polygonToZIPfromEE(polygon, dayStartDay2, dayEndDay2, 'NVDI')
+
+zipRGBDay1 = polygonToZIPfromEE(polygon, dayStartDay1, dayEndDay1, 'RGB')
 zipRGBDay2 = polygonToZIPfromEE(polygon, dayStartDay2, dayEndDay2, 'RGB')
+
+#changes made
+#writeToFile(zipRGBDay1, zipRGBDay1FileName)
 #writeToFile(zipRGBDay2, zipRGBDay2FileName)
+
+
 tifNVDIDay1 = extractTIFFromZIP(zipNVDIDay1, '.tif')
 tifNVDIDay2 = extractTIFFromZIP(zipNVDIDay2, '.tif')
 
 print('1')
 zipRGBDay2 = polygonToZIPfromEE(polygon, dayStartDay2, dayEndDay2, 'RGB')
 tifRedDay2 = extractTIFFromZIPToFile(zipRGBDay2, 'B2.tif')
+zipRGBDay1 = polygonToZIPfromEE(polygon, dayStartDay1, dayEndDay1, 'RGB')
+tifRedDay1 = extractTIFFromZIPToFile(zipRGBDay1, 'B2.tif')
 
 print('2')
 zipRGBDay2 = polygonToZIPfromEE(polygon, dayStartDay2, dayEndDay2, 'RGB')
 tifGreenDay2 = extractTIFFromZIPToFile(zipRGBDay2, 'B3.tif')
+zipRGBDay1 = polygonToZIPfromEE(polygon, dayStartDay1, dayEndDay1, 'RGB')
+tifGreenDay1 = extractTIFFromZIPToFile(zipRGBDay1, 'B3.tif')
 
 print('3')
 zipRGBDay2 = polygonToZIPfromEE(polygon, dayStartDay2, dayEndDay2, 'RGB')
 tifBlueDay2 = extractTIFFromZIPToFile(zipRGBDay2, 'B4.tif')
+zipRGBDay1 = polygonToZIPfromEE(polygon, dayStartDay1, dayEndDay1, 'RGB')
+tifBlueDay1 = extractTIFFromZIPToFile(zipRGBDay1, 'B4.tif')
 
 # PARAMS
-coord = coord # in 
+coord = coord # in
 tifNVDIDay1 = tifNVDIDay1 # in
 tifNVDIDay2 = tifNVDIDay2 # in
+
 tifRedDay2 = tifRedDay2 # in #TODO safe this in a file
 tifGreenDay2 = tifGreenDay2 # in #TODO safe this in a file
 tifBlueDay2 = tifBlueDay2 # in #TODO safe this in a file
-clippedTifNVDIDay1 = 'data/nvdiDay1.tif' # out 
-clippedTifNVDIDay2 = 'data/nvdiDay2.tif' # out 
-clippedJpgNVDIDay1 = 'data/nvdiDay1.jpg' # out 
-clippedJpgNVDIDay2 = 'data/nvdiDay2.jpg' # out 
-pngRedDay2 = 'data/redDay2.png' # out 
-pngGreenDay2 = 'data/greenDay2.png' # out 
-pngBlueDay2 = 'data/blueDay2.png' # out 
+
+tifRedDay1 = tifRedDay1 # in #TODO safe this in a file
+tifGreenDay1 = tifGreenDay1 # in #TODO safe this in a file
+tifBlueDay1 = tifBlueDay1 # in #TODO safe this in a file
+clippedTifNVDIDay1 = 'data/nvdiDay1.tif' # out
+clippedTifNVDIDay2 = 'data/nvdiDay2.tif' # out
+clippedJpgNVDIDay1 = 'data/nvdiDay1.jpg' # out
+clippedJpgNVDIDay2 = 'data/nvdiDay2.jpg' # out
+
+clippedJpgNVDIDay1_color = 'data/nvdiDay1_color.png' # out
+clippedJpgNVDIDay2_color = 'data/nvdiDay2_color.png' # out
+
+pngRedDay2 = 'data/redDay2.png' # out
+pngGreenDay2 = 'data/greenDay2.png' # out
+pngBlueDay2 = 'data/blueDay2.png' # out
+
+pngRedDay1 = 'data/redDay1.png' # out
+pngGreenDay1 = 'data/greenDay1.png' # out
+pngBlueDay1 = 'data/blueDay1.png' # out
 # DO
 clipTIF(tifNVDIDay1, clippedTifNVDIDay1, coord)
 clipTIF(tifNVDIDay2, clippedTifNVDIDay2, coord)
 tifToJPG(clippedTifNVDIDay1, clippedJpgNVDIDay1)
 tifToJPG(clippedTifNVDIDay2, clippedJpgNVDIDay2)
+
+#Make NDVI look much better
+colorndvi(clippedJpgNVDIDay1,clippedJpgNVDIDay1_color)
+colorndvi(clippedJpgNVDIDay2,clippedJpgNVDIDay2_color)
+
 #tifToPNG(tifRedDay2, pngRedDay2)
 #tifToPNG(tifGreenDay2, pngGreenDay2)
 #tifToPNG(tifBlueDay2, pngBlueDay2)
@@ -239,16 +281,30 @@ tifToJPG(clippedTifNVDIDay2, clippedJpgNVDIDay2)
 pngRedDay2 = pngRedDay2 # in
 pngGreenDay2 = pngGreenDay2 # in
 pngBlueDay2 = pngBlueDay2 # in
-file_list = [tifRedDay2, tifGreenDay2, tifBlueDay2] # TODO these are memory tiffs but need to be filenames
-tifImage = 'data/stack.tif' # out
+
+pngRedDay1 = pngRedDay1 # in
+pngGreenDay1 = pngGreenDay1 # in
+pngBlueDay1 = pngBlueDay1 # in
+
+file_list_day2 = [tifRedDay2, tifGreenDay2, tifBlueDay2] # TODO these are memory tiffs but need to be filenames
+tifImage_day2 = 'data/stack_day2.tif' # out
+
+file_list_day1 = [tifRedDay1, tifGreenDay1, tifBlueDay1] # TODO these are memory tiffs but need to be filenames
+tifImage_day1 = 'data/stack_day1.tif' # out
 # DO
-makeRGB(file_list, tifImage) # produces 1 combined geotif out of 3 geotifs (r,g,b)
+makeRGB(file_list_day2, tifImage_day2) # produces 1 combined geotif out of 3 geotifs (r,g,b)
+makeRGB(file_list_day1, tifImage_day1) # produces 1 combined geotif out of 3 geotifs (r,g,b)
+
 
 # PARAM
-tifImage = tifImage # in
-pngImage = 'data/stack.png'# out
+tifImage_day2 = tifImage_day2 # in
+pngImage_day2 = 'data/stack_day2.png'# out
+
+tifImage_day1 = tifImage_day1 # in
+pngImage_day1 = 'data/stack_day1.png'# out
 # DO
-tifToPNG(tifImage, pngImage) # converts geotif to jpg
+tifToPNG(tifImage_day2, pngImage_day2) # converts geotif to jpg
+tifToPNG(tifImage_day1, pngImage_day1) # converts geotif to jpg
 
 print("finish producing Images")
 
@@ -273,4 +329,3 @@ print("finish producing Images")
 
 
 # #print("out2.jpg")
-
