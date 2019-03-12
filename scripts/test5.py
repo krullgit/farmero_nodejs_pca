@@ -122,3 +122,13 @@ f=open("data/yield_loss.txt","a+")
 f.write("Difference in NDVI images from Day-1 to Day-2 \n")
 f.write('{:03f}\n'.format((dif / 255.0 * 100) / ncomponents))
 f.close()
+
+#Creating zip archive for app
+z = zipfile.ZipFile("data/app.zip", "w")
+z.write("data/nvdiDay1_color.png")
+z.write("data/nvdiDay2_color.png")
+z.write("data/stack_day1.png")
+z.write("data/stack_day2.png")
+z.write("data/yield_loss.txt")
+z.write("data/points.txt")
+z.close()
