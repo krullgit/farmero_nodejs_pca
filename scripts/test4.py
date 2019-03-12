@@ -78,9 +78,7 @@ def find_PCAKmeans(imagepath1, imagepath2):
     print('\new size ', np.asarray(image1.shape))
     print('\new size ', np.asarray(image1.shape) / 5)
     print('\new size ', np.asarray(image1.shape) / 5 * 5)
-    # We dont need to resize the image
-    #image1 = imresize(image1, (new_size)).astype(np.int16)
-    #image2 = imresize(image2, (new_size)).astype(np.int16)
+ 
     image1 = image1.astype(np.int16)
     image2 = image2.astype(np.int16)
     
@@ -116,13 +114,14 @@ def find_PCAKmeans(imagepath1, imagepath2):
     imsave("data/changemap.jpg", change_map)
     imsave("data/cleanchangemap.jpg", cleanChangeMap)
 
-    #finding the loss from the change_map
+    #finding the loss from the change_map image
     n_white_pix = np.sum(cleanChangeMap == 255)
     n_black_pix = np.sum(cleanChangeMap == 0)
     blackpix = float(n_black_pix)
     whitepix = float(n_white_pix)
     loss = whitepix/blackpix
-
+   
+    # Writing the loss to file
     f=open("data/yield_loss.txt","w+")
     f.write("white pixels:\n")
     f.write('{:03f}\n'.format(whitepix))
