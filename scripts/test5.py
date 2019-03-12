@@ -1,5 +1,4 @@
 import ee
-#from IPython.display import Image
 from io import BytesIO
 from zipfile import ZipFile
 from urllib.request import urlopen
@@ -14,9 +13,6 @@ import rasterio
 import rasterio.mask
 from osgeo import gdal
 
-#geoms = [{'type': 'Polygon', 'coordinates': [[(13.272943496704102, 52.26377127581493),(13.275260925292969, 52.25586469803543),(13.288092613220215, 52.2596999583217),(13.292684555053711, 52.26650278898101),(13.296761512756348,52.27017956020817),(13.296289443969727,52.27123001026625),(13.288435935974121,52.26933918223966),(13.28174114227295,52.26834121271067),(13.272943496704102,52.26377127581493)]]}]
-coordString = "[[12.941725850371768,51.57971352400993],[12.942047715453555,51.57588640768779],[12.940846085814883,51.571032040481654],[12.943442464141299,51.57112539858611],[12.944708466796328,51.570671943139885],[12.948763966826846,51.57088533450155],[12.949965596465518,51.57121875649885],[12.951789498595645,51.570325180040776],[12.954450249938418,51.57021848317042],[12.954471707610537,51.571432145293755],[12.946274876861025,51.580113552408065],[12.941725850371768,51.57971352400993]]"
-#coord = json.loads(coordString)
 # In this case the nodejs server provides the coordinates in an argument
 coord = json.loads(sys.argv[1])
 geoms = [{'type': 'Polygon', 'coordinates': [[tuple(l) for l in coord]] }]
@@ -103,6 +99,7 @@ for idx, j in enumerate(longsOneDimOnlyWhite):
 
 
 f.close()
+
 #Caculate difference between NDVI images
 i1 = Image.open("data/nvdiDay1_color.png")
 i2 = Image.open("data/nvdiDay2_color.png")
@@ -118,12 +115,13 @@ else:
 
 ncomponents = i1.size[0] * i1.size[1] * 3
 print("Difference (percentage):", (dif / 255.0 * 100) / ncomponents)
+#write the value to a file used in the app
 f=open("data/yield_loss.txt","a+")
 f.write("Difference in NDVI images from Day-1 to Day-2 \n")
 f.write('{:03f}\n'.format((dif / 255.0 * 100) / ncomponents))
 f.close()
 
-#Creating zip archive for app
+#Creating zip archive for app consumption
 z = zipfile.ZipFile("data/app.zip", "w")
 z.write("data/nvdiDay1_color.png")
 z.write("data/nvdiDay2_color.png")
