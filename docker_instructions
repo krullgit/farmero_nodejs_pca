@@ -1,6 +1,6 @@
 1. cd /folder containing dockerfile
 2. docker build -t farmero-slim .
-3. docker run --name farmero-slim -p 3000:3000 -d -t -i da43a0366f05 /bin/bash
+3. docker run --name farmero-slim -p 3000:3000 -d -t -i "image-id" /bin/bash
 4. docker exec -it farmero-slim bash
 
 ### Authenticate with Earth_Engine:
