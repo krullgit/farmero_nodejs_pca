@@ -119,7 +119,7 @@ def find_PCAKmeans(imagepath1, imagepath2):
     n_black_pix = np.sum(cleanChangeMap == 0)
     blackpix = float(n_black_pix)
     whitepix = float(n_white_pix)
-    loss = whitepix/blackpix
+    loss = (whitepix/blackpix)*100
    
     # Writing the loss to file
     f=open("data/yield_loss.txt","w+")
