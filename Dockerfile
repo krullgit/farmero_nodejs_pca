@@ -1,12 +1,11 @@
-FROM debian:jessie as builder
+FROM debian:latest
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV LANG=C.UTF-8
 RUN apt-get update && \
   apt-get install -yq --no-install-recommends \
     curl \
     bzip2 \
-    ca-certificates
+    ca-certificates \
+    libgtk2.0-0
 
 ENV MINICONDA_VERSION 4.5.4
 ENV PATH=/opt/conda/bin:$PATH
@@ -20,29 +19,32 @@ RUN cd /tmp && \
     /opt/conda/bin/conda config --system --set show_channel_urls true && \
     /opt/conda/bin/conda install --quiet --yes conda="${MINICONDA_VERSION%.*}.*" && \
     /opt/conda/bin/conda update --all --quiet --yes && \
-    conda clean -tipsy
+    conda install -c conda-forge earthengine-api && \
+    conda install nodejs git &&\
+    apt-get -qq -y remove curl bzip2 && \
+    apt-get -qq -y autoremove && \
+    apt-get autoclean && \
+    rm -rf /var/lib/apt/lists/* /var/log/dpkg.log && \
+    conda clean --all --yes
+
 
 ADD python_envs/environment_p2.yml /tmp/environment_p2.yml
-RUN conda env create -f /tmp/environment_p2.yml
-
 ADD python_envs/environment_p3.yml /tmp/environment_p3.yml
-RUN conda env create -f /tmp/environment_p3.yml
 
-RUN conda install -c conda-forge earthengine-api
-
-#RUN earthengine authenticate --quiet
-
-#RUN earthengine authenticate --authorization-code=4/CAEb3-Y0358CvZbJFzw8cYj01PYGdql4PBvA8G8R-Qj72g7vUzB3oCY
-
-#RUN python -c "import ee; ee.Initialize()"
-
-RUN apt-get install --reinstall -y libgtk2.0-0
-
-RUN conda install nodejs git
-
+RUN conda env create -f /tmp/environment_p2.yml && \
+    conda env create -f /tmp/environment_p3.yml && \
+    conda clean --all --yes
+    
 WORKDIR /farmero_nodejs_pca
 
-#COPY . /farmero_nodejs_pca/
+# clean
+RUN apt-get autoremove -y && apt-get clean && \
+    rm -rf /usr/local/src/*
+
+COPY package-lock.json /farmero_nodejs_pca/
+COPY package.json /farmero_nodejs_pca/
+COPY scripts /farmero_nodejs_pca/scripts
+COPY server.js /farmero_nodejs_pca/
 
 RUN npm install .
 
