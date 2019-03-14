@@ -1,5 +1,6 @@
 import ee
 from io import BytesIO
+import zipfile
 from zipfile import ZipFile
 from urllib.request import urlopen
 import re
