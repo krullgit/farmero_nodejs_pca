@@ -10,7 +10,7 @@ app.get('/', function(req, res) {
 
     var coord = req.query.coord
     const spawn1 = require('child_process').spawn;
-    const ls1 = spawn1('/opt/conda/envs/farmero_python3/bin/python', ['scripts/test.py', coord, 'arg2']);
+    const ls1 = spawn1('/opt/conda/envs/farmero_python3/bin/python', ['scripts/getimages.py', coord, 'arg2']);
 
     var back = ''
 
@@ -25,7 +25,7 @@ app.get('/', function(req, res) {
 
         const spawn2 = require('child_process').spawn;
         
-        const ls2 = spawn2('/opt/conda/envs/farmero_python2/bin/python', ['scripts/test4.py']);
+        const ls2 = spawn2('/opt/conda/envs/farmero_python2/bin/python', ['scripts/computepca.py']);
 
         var back = ''
 
@@ -39,7 +39,7 @@ app.get('/', function(req, res) {
             // START ---- calculate change points ---- START
 
             const spawn3 = require('child_process').spawn;
-            const ls3 = spawn3('/opt/conda/envs/farmero_python3/bin/python', ['scripts/test5.py', coord, 'arg2']);
+            const ls3 = spawn3('/opt/conda/envs/farmero_python3/bin/python', ['scripts/computepoints.py', coord, 'arg2']);
             var back = ''
 
             ls3.stdout.on('data', (data) => {
